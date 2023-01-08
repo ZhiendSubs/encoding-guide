@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es-es">
+<head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Filtros</title>
+        <link rel="stylesheet" href="../../styles/styles.css">
+        <link rel="stylesheet" href="../../styles/github-dark-dimmed.min.css">
+        <script src="../../scripts/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+</head>
+<body>
+        <nav>
+                <a href="../../index.html">Codificación y filtrado de vídeo</a> >
+                <a href="../vapoursynth.html">VapourSynth</a> >
+                <a href="filtros.html">Filtros</a>
+        </nav>
+        <section id="Índice">
+                <h1>Índice</h1>
+                <nav>
+                        <ul>
+                                <li><a href="#Básico">Básico</a>
+                                        <ul>
+                                                <li><a href="#Importar_scripts_y_declarar_variables">Importar scripts y declarar variables</a></li>
+                                                <li><a href="#Importar_vídeo">Importar vídeo</a></li>
+                                                <li><a href="#Exportar_vídeo">Exportar vídeo</a></li>
+                                        </ul>
+                                </li>
+                                <li><a href="#Descale">Descale</a></li>
+                                <li><a href="#Resize">Resize</a></li>
+                                <li><a href="#Masking">Masking</a></li>
+                                <li><a href="#Deband">Deband</a></li>
+                                <li><a href="#Deblocking">Deblocking</a></li>
+                                <li><a href="#Antialiasing">Antialiasing</a></li>
+                                <li><a href="#Dehaloing">Dehaloing</a></li>
+                                <li><a href="#Deringing">Deringing</a></li>
+                                <li><a href="#Denoise">Denoise</a></li>
+                                <li><a href="#IVTC">IVTC</a></li>
+                                <li><a href="#Graining">Graining</a></li>
+                                <li><a href="#Cargar_script_en_x264">Cargar script en x264</a></li>
+                                <li><a href="#Ejemplos">Ejemplos</a></li>
+                        </ul>
+                </nav>
+        </section>
+        <section id="Básico">
+                <h1>Básico</h1>
+                <p>Primero, veremos la parte más básica de VapourSynth:</p>
+                <ul>
+                        <li><a href="#Importar_scripts_y_declarar_variables">Importar scripts y declarar variables</a></li>
+                        <li><a href="#Importar_vídeo">Importar vídeo</a></li>
+                        <li><a href="#Exportar_vídeo">Exportar vídeo</a></li>
+                </ul>
+                <div id="Importar_scripts_y_declarar_variables">
+                        <h2>Importar scripts y declarar variables</h2>
+                        <p>Dependeremos bastante de scripts, por lo que tendremos que importarlos para poder trabajar con ellos.<br>Una vez tenemos el .vpy creado, lo primero que importaremos será vapoursynth:</p>
+                        <pre><code class="language-py">import vapoursynth as vs</code></pre>
+                        <p>Ahora, para tener más fácil acceso a plugins internos de VapourSynth, declararemos:</p>
+                        <pre><code class="language-py">core = vs.core</code></pre>
+                        <p>Y para importar scripts, simplemente tendremos que hacer como con vapoursynth:</p>
+                        <pre><code class="language-py">import fvsfunc as fvf #con “as” estamos indicando el nombre con el que llamaremos al script</code></pre>
+                        <p>También podemos importar una única función:</p>
+                        <pre><code class="language-py">from fvsfunc import Depth</code></pre>
+                        <p>Por último, también podemos establecer un límite de memoria para el filtrado. Se recomienda establecerlo en 2000 menos de la RAM de la que se dispone. Por ejemplo, yo tengo 16 GiB, así que:</p>
+                        <pre><code class="language-py">core.max_cache_size = 14000</code></pre>
+                </div>
+                <div id="Importar_vídeo">
+                        <h2>Importar vídeo</h2>
+                        <p>Para importar prácticamente cualquier vídeo utilizaremos L-SMASH-Works. Además, trabajaremos el vídeo en 16 bits, así que usaremos Depth de fvsfunc, mvsfunc, o cualquier otro.</p>
+                        <pre><code class="language-py">#source
+src = core.lsmas.LWLibavSource(r"G:\Encode\.vscode\Scripts\[WEB]\Bocchi the Rock!\src\01.mkv")
+video = src #declaramos que “video” es igual a “src”
+video = Depth(video, 16) #pasamos el vídeo a 16 bits. Primero llamamos a la función y, dentro de ella, primero ponemos qué pasar a 16 bits, y segundo la profundidad en bits, 16.</code></pre>
+                        <p>Por otro lado, para DVD en los que un mismo vídeo está repartido en varios archivos, tendremos que crear un archivo .d2v para luego poder importarlo como un único vídeo. Para crear el archivo, usaremos <a href="https://github.com/dubhater/D2VWitch/releases" target="_blank">D2VWitch</a>.<br>Una vez ejecutado el programa, arrastramos todas las partes que formen el vídeo completo, seleccionamos que extraiga el audio y hacemos click en “Engage”. Cuando haya finalizado, tendremos el audio y un archivo .d2v.</p>
+                        <img src="../../img/filtros/d2v-1.jpg" alt="D2VWitch img" class="screenshot" style="max-width: 760px;">
+                        <p>Ahora, de vuelta en VapourSynth, para importar el .d2v pondremos lo siguiente:</p>
+                        <pre><code class="language-py">src = core.d2v.Source(r"G:\Encode\.vscode\Scripts\[BD-DVD]\Romeo x Juliet\src\01-02\VTS_01_1.d2v")[0:42558]
+video = src
+video = Depth(video, 16)</code></pre>
+                        <p>Al final, los números que están entre corchetes son los frames de inicio y final+1. Es decir, el episodio comienza en el fotograma 0 y acaba en el 42557. Para el siguiente episodio sería igual:</p>
+                        <pre><code class="language-py">src = core.d2v.Source(r"G:\Encode\.vscode\Scripts\[BD-DVD]\Romeo x Juliet\src\01-02\VTS_01_1.d2v")[42558:85986]</code></pre>
+                        <p>El episodio empieza cuando acaba el previo, y finaliza en el último fotograma del vídeo, el cual podemos ver en D2VWitch.</p>
+                </div>
+        </section>
+        <div id="Exportar_vídeo">
+                <h2>Exportar vídeo</h2>
+                <p>Por último, exportaremos el vídeo para procesarlo con x264 o poder previsualizarlo con vs-preview:</p>
+                <pre><code class="language-py">#Final
+out = video #declaramos “video” como “out”
+final = Depth(out, 16) #declaramos “final” como “out” a 16 bits
+final.set_output() #establecemos “final” como la salida</code></pre>
+                <p>El vídeo siempre lo sacaremos a 16 o a 8 bits, ya que son los bits que admite x264 de entrada. En caso de tratar de importar un vídeo a 10 bits, lo convertirá a 16 bits y de nuevo a 10 bits (o a 8, según los bits que hayamos especificado). De esa manera, evitamos conversiones innecesarias.</p>
+        </div>
+        <section id="Descale">
+                <h1>Descale</h1>
+                <p>Hay una gran cantidad de series que están animadas a resoluciones inferiores, pero que fueron reescaladas a una resolución mayor. En la mayoría de los casos, esto no supondrá mejoras en el vídeo, e incluso hará que se vea peor, por lo que preferiremos devolver el vídeo a su resolución original. ¿Y cómo averiguamos su resolución original? Pues para ello usaremos getnative, que instalaremos mediante pip:</p>
+                <span class="code">py -m pip install getnative</span>
+                <p>Ahora, con una captura que hayamos hecho de un fotograma claro con el menor desenfoque posible y sin efectos (o muchos efectos), ejecutamos el siguiente comando, donde %1% es la ruta a la imagen (preferiblemente podemos crear un .bat y arrastar la imagen en él) y --output-dir donde guardará los resultados.</p>
+                <span class="code">
+                        py -m getnative --mode "all" --output-dir G:\getnative %1%<br>
+                        pause
+                </span>
+                <p>Probará con varios kernels y estimará cuál es la resolución nativa. Dentro del terminal aparecen estas resoluciones, pero preferiblemente iremos a donde ha guardado las gráficas y las revisaremos.</p>
+                <img src="../../img/filtros/getnative-1.jpg" alt="getnative-1" class="screenshot">
+                <img src="../../img/filtros/getnative-2.jpg" alt="getnative-2" class="screenshot">
+                <p>Claramente señala que es 720p, que es la resolución nativa de Sword Art Online, con la cual he probado. Ahora, quedaría probar con distintos kernels y comprobar por cuenta propia cuál se ve mejor.<br>Sin embargo, comprobemos ahora una serie que esté animada a 1080p o a una resolución superior a 900p (o simplemente un mal fotograma de una que sí lo esté).</p>
+                <img src="../../img/filtros/getnative-3.jpg" alt="getnative-3" class="screenshot">
+                <img src="../../img/filtros/getnative-4.jpg" alt="getnative-4" class="screenshot">
+                <p>Aquí podemos observar claramente que no se puede ni debe desescalar.<br>En caso de que tengamos que hacerlo, importaremos la función desde fvsfunc y la usaremos:</p>
+                <pre><code class="language-py">from fvsfunc import Despline36M #la “M” ayuda con elementos que sí están en 1080p, como créditos, creando una máscara y escalándolos mediante Spline36
+
+#Descale
+descale = Despline36M(videod, 1280, 720)</code></pre>
+                <pre><code class="language-py">from fvsfunc import DebicubicM
+
+descaled = DebicubicM(aa, 1280, 720, b=1/3, c=1/3)</code></pre>
+                <p>También podemos intentar realizar un upscale que quede “bonito” de vuelta a 1080p, algo conveniente cuando salen resoluciones raras:</p>
+                <pre><code class="language-py">from nnedi3_rpow2 import *
+
+scaled = nnedi3_rpow2(descale, nns=4, qual=2, pscrn=1).resize.Spline64(1920, 1080)</code></pre>
+        </section>
+        <section id="Resize">
+                <h1>Resize</h1>
+                <p>En ocasiones tendremos que cambiar la resolución del vídeo, como en el caso anterior. Para ello, principalmente usaremos <span class="param">core.resize.[kernel]</span>. Además, la función de resize también nos puede servir para transferir espacios de color y el formato, entre otras cosas. También disponemos de escaladores basados en redes neuronales, que son una buena opción al hacer upscale, como nnedi3_rpow2.</p>
+                <pre><code class="language-py">downscale = core.resize.Spline36(video, 1280, 720)
+upscale = nnedi3_rpow2(descale, nns=4, qual=2, pscrn=1).resize.Spline64(1920, 1080)
+dtl_mask = core.resize.Spline16(mask, format=vs.GRAY16) #cambiar el formato a GRAY16
+switch_colorspace = core.resize.Spline16(dvd, transfer_in_s=”709”, matrix_in_s="709") #transferir el espacio de color a 709</code></pre>
+        </section>
+        <section id="Masking">
+                <h1>Masking</h1>
+                <p>Es muy importante crear máscaras, pues algunos filtros resultan muy destructivos y pueden cargarse los detalles. Con las máscaras buscamos evitar que eso ocurra en la medida de lo posible.<br>Existen muchas máscaras, y también se pueden crear manualmente.</p>
+                        <h3>dhh.mask</h3>
+                                <p>Esta es una máscara para dehalo. La podemos encontrar en <a href="https://pastebin.com/raw/2uziEgxr" target="_blank">https://pastebin.com/raw/2uziEgxr</a>.</p>
+                                <pre><code class="language-py">from dhh import mask as dehalo_mask
+
+dh_mask = dehalo_mask(aa, smooth=True, dha=True)</code></pre>
+                                <ul>
+                                        <li>smooth=True: habilita una pequeña protección extra para las líneas.</li>
+                                        <li>dha=True: habilita la protección de líneas adyacentes para scripts como Dehalo_alpha.</li>
+                                </ul>
+                        <h3>lvsfunc.mask.detail_mask</h3>
+                                <p>Es una máscara para detalle, a usar cuando se hace denoise/deband.</p>
+                                <pre><code class="language-py">from lvsfunc import mask as lvfmask
+
+deband_mask = lvfmask.detail_mask(video, rad=1, brz_a=0.025, brz_b=0.039)
+deband_mask = lvfmask.detail_mask_neo(masked_dehalo, detail_brz=1000, lines_brz=2750) #variante que trata de conservar el mayor detalle posible</code></pre>
+                                <ul>
+                                        <li>brz_a/detail_brz: binarización del detalle.</li>
+                                        <li>brz_b/lines_brz: binarización de bordes.</li>
+                                </ul>
+                        <h3>retinex_edgemask</h3>
+                        <p>Otra máscara de detalle, pero con más precisión en escenas con poco brillo.</p>
+                        <pre><code class="language-py">from kagefunc import retinex_edgemask
+
+dtl_mask = retinex_edgemask(video)</code></pre>
+                        <h3>MaskedMerge</h3>
+                        <p>Lo usaremos para juntar dos vídeos mediante una máscara. El primer valor será el vídeo filtrado, el segundo el vídeo antes de ese filtro (o ese filtro pero más suave) y lo último la máscara.</p>
+                        <pre><code class="language-py">aa = core.std.MaskedMerge(aa_a, aa_b, edge_mask)</code></pre>
+                        <h4>Para más información sobre máscaras:</h4>
+                        <ul>
+                                <li><a href="https://blog.kageru.moe/legacy/edgemasks.html" target="_blank">https://blog.kageru.moe/legacy/edgemasks.html</a></li>
+                                <li><a href="https://silentaperture.gitlab.io/mdbook-guide/filtering/masking.html" target="_blank">https://silentaperture.gitlab.io/mdbook-guide/filtering/masking.html</a></li>
+                                <li><a href="https://guide.encode.moe/encoding/masking-limiting-etc.html" target="_blank">https://guide.encode.moe/encoding/masking-limiting-etc.html</a></li>
+                        </ul>
+        </section>
+        <section id="Deband">
+                <h1>Deband</h1>
+                <p>Para esto, tenemos dos opciones:</p>
+                        <h3>dumb3kdb</h3>
+                        <p>Este es el que querremos usar normalmente.</p>
+                        <pre><code class="language-py">from debandshit import dumb3kdb
+
+deband = core.average.Mean([
+        dumb3kdb(video, radius=18, threshold=[20, 16], grain=[24, 12]),
+        dumb3kdb(video, radius=21, threshold=[32, 24], grain=[24, 12])
+    ]).std.MaskedMerge(video, deband_mask)</code></pre>
+                        <ul>
+                                <li>radius: el rango de píxeles usados para calcular si algo es banding.</li>
+                                <li>threshold: podría decirse que es la fuerza con la que actúa.</li>
+                                <li>grain: grano a añadir para ayudar a prevenir que vuelva a aparecer banding.</li>
+                        </ul>
+                        <h3>Placebo</h3>
+                        <p>Es algo más fuerte, por lo que puede ayudar con banding más complicado de disimular, pero a su vez puede llevarse mucho detalle.</p>
+                        <pre><code class="language-py">from debandshit import placebo_deband as placebo
+
+deband = placebo(video, radius=17, threshold=2.8, iterations=2, grain=[6, 0])
+debanded = core.std.MaskedMerge(deband, video, deband_mask)</code></pre>
+                        <p>También puede combinarse con dumb3kdb:</p>
+                        <pre><code class="language-py">from debandshit import dumb3kdb, placebo_deband as placebo
+
+#Deband
+debanded = core.average.Mean([
+        dumb3kdb(denoised, rad=17, thr=[20, 24], grain=[24, 12]),
+        dumb3kdb(denoised, rad=21, thr=[32, 24], grain=[24, 12]),
+        placebo(denoised, rad=6, thr=2.8, itr=2, grain=6)
+    ]).std.MaskedMerge(video, deband_mask)</code></pre>
+                        <ul>
+                                <li>threshold: lo mismo que para dumb3kdb.</li>
+                                <li>iteration: el número de pasos a realizar por muestra.</li>
+                                <li>grain: igual que para dumb3kdb, solo que mucho mejor.</li>
+                                <li>radius: igual que para dumb3kdb.</li>
+                        </ul>
+        </section>
+        <section id="Deblocking">
+                <h1>Deblocking</h1>
+                <p>Rara vez necesitaremos una alternativa a core.deblock.</p>
+                <pre><code class="language-py">deblock = core.deblock.Deblock(video, quant=28)
+deblock = core.std.MaskedMerge(deblock, video, dtl_mask)</code></pre>
+                <ul><li>quant: la fuerza del deblocking.</li></ul>
+        </section>
+        <section id="Antialiasing">
+                <h1>Antialiasing</h1>
+                <p>Este suele ser el punto más complicado, pues conseguir un buen equilibrio entre conservar detalle e intentar que el aliasing “desaparezca” es muy tedioso.<br>La función preferida para esto es xaa, aunque hay quienes crean la suya propia. La descargaremos de <a href="https://raw.githubusercontent.com/dubhater/vapoursynth-xaa/master/xaa.py" target="_blank">aquí</a>.</p>
+                <pre><code class="language-py">from xaa import *
+
+aa = xaa(video, mode=”di3 nnedi3cl”, mask=1, nns=4, mthr=8)</code></pre>
+                <ul>
+                        <li>mode:
+                                <ul>
+                                        <li>AA: sr (single rate), dr (double rate) o di (doubled image).</li>
+                                        <li>Pasadas: el número de pasadas que realizará (de 1 a 9).</li>
+                                        <li>Tipo: el plugin de antialiasing a utilizar (SangNom, znedi3, nnedi3cl, eedi3, eedi2).</li>
+                                </ul>
+                        </li>
+                        <li>mask: 0 (procesa el fotograma al completo), 1 (procesa solo los bordes) o 2 (procesa todo menos los bordes).</li>
+                        <li>nns: valores mayores suponen mayor calidad (de 0 a 4).</li>
+                        <li>mthr: el umbral de la máscara de detalle. Cuando mask es 1, valores menores resultan en más bordes procesados, y cuando es 2, menos bordes excluidos.</li>
+                </ul>
+                <p>Más información: <a href="https://github.com/dubhater/vapoursynth-xaa" target="_blank">https://github.com/dubhater/vapoursynth-xaa</a></p>
+        </section>
+        <section id="Dehaloing">
+                <h1>Dehaloing</h1>
+                <p>Podemos usar Dehalo_alpha (de havsfunc) o fine_dehalo (de vsdehalo).</p>
+                        <h3>Dehalo_alpha</h3>
+                        <pre><code class="language-py">from havsfunc import DeHalo_alpha
+from dhh import mask as dehalo_mask
+
+dh_mask = dehalo_mask(video, smooth=True, dha=True)
+dehalo = DeHalo_alpha(video, rx=1.8)
+dehalo = core.std.MaskedMerge(dehalo, video, dh_mask)</code></pre>
+                        <ul>
+                                <li>rx/ry: el radio para la eliminación de halos.</li>
+                                <li>darkstr/brightstr: la fuerza para el procesado de halos oscuros/brillantes.</li>
+                        </ul>
+                        <h3>fine_dehalo</h3>
+                        <pre><code class="language-py">from vsdehalo import fine_dehalo, edge_cleaner
+
+dehalo = fine_dehalo(aa, rx=1.8, darkstr=0)
+dehaloed = edge_cleaner(dehalo, 5.75, hot=True, smode=True)</code></pre>
+                        <ul>
+                                <li>rx/ry: lo mismo que en Dehalo_alpha.</li>
+                                <li>darkstr/brightstr: ídem.</li>
+                        </ul>
+                        <p>edge_cleaner (sirve para limpiar los bordes, como el nombre indica):</p>
+                        <ul>
+                                <li>hot: aplica “repair” de rgtools.</li>
+                                <li>smode: crea una máscara de detalle.</li>
+                        </ul>
+        </section>
+        <section id="Deringing">
+                <h1>Deringing</h1>
+                <pre><code class="language-py">from havsfunc import HQDeringmod
+
+dering = HQDeringmod(video, mthr=24)</code></pre>
+                <ul><li>mthr: umbral de la máscara de detalle. Valores menores implican un procesamiento más agresivo y más ringing siendo interpretado como borde, lo que impide que sea procesado.</li></ul>
+        </section>
+        <section id="Denoise">
+                <h1>Denoise</h1>
+                <p>Las funciones más normales a usar son BM3D y KNLMeansCL, empleadas normalmente juntas (BM3D para el plano Y y KNLMeansCL para los planos UV).</p>
+                <pre><code class="language-py">from lvsfunc import mask as lvfmask
+from vsutil import get_y
+from mvsfunc import BM3D
+from muvsfunc import MergeChroma
+from vardefunc import noise, decsiz
+
+#Denoise
+d_mask = lvfmask.detail_mask(video, sigma=2, rad=1, brz_a=0.026, brz_b=0.0023)
+luma = get_y(dehaloed) #extraemos el plano Y
+denoise_Y = BM3D(luma, radius1=1, profile1='fast', sigma=[2.5,0.0,0.0])	#aplicamos denoise a Y
+denoise_UV = core.knlm.KNLMeansCL(dehaloed, d=2, a=3, h=0.4, device_type='gpu', device_id=0, channels="UV") #aplicamos denoise a los planos UV
+denoise = MergeChroma(denoise_Y, denoise_UV) #juntamos el plano Y con los planos UV
+denoised = core.std.MaskedMerge(denoise, dehaloed, d_mask)</code></pre>
+                <ul>
+                        <li>BM3D:
+                                <ul>
+                                        <li>radius1: radio temporal para la estimación básica (0 para espacial y 1-16 para espacio-temporal).</li>
+                                        <li>profile1: el perfil a utilizar
+                                                <ul>
+                                                        <li>	fast (rápido)</li>
+                                                        <li>lc (baja complejidad)</li>
+                                                        <li>np (normal)</li>
+                                                        <li>high (alto)</li>
+                                                        <li>vn (mucho ruido)</li>
+                                                </ul>
+                                        </li>
+                                        <li>sigma: la intensidad del filtro ([Y, U, V]).</li>
+                                </ul>
+                        </li>
+                        <li>KNLMeansCL:
+                                <ul>
+                                        <li>d: el número de fotogramas pasados y futuros que puede usar como referencia.</li>
+                                        <li>a: el radio de búsqueda (0=1 píxel, 1=9 píxeles, etc.).</li>
+                                        <li>h: la intensidad del filtro.</li>
+                                        <li>device_type: el dispositivo a usar con OpenCL (accelerator, cpu, gpu o auto).</li>
+                                        <li>device_id: 0 para seleccional el primer dispositivo correspondiente a device_type (o 1 para el segundo si, por ejemplo, se tienen dos GPU).</li>
+                                        <li>channels: los planos a procesar (auto, YUV, Y, UV o RGB) (las gráficas de AMD solo trabajan con los planos UV).</li>
+                                </ul>
+                        </li>
+                </ul>
+                <h3>decsiz</h3>
+                <p>Una función para aumentar la compresibilidad difuminando el ruido invisible que se encuentre por encima de max_in manteniéndolo por debajo de min_in.</p>
+                <pre><code class="language-py">from vardefunc import decsiz
+
+denoised = decsiz(denoised, min_in=208 << 8, max_in=240 << 8)</code></pre>
+        </section>
+        <section id="IVTC">
+                <h1>IVTC</h1>
+                <p>El desentrelazado y el detelecine son algo muy extenso. No hay una solución mágica para todo; hay que jugar mucho e investigar para poder desentrelazar correctamente el vídeo. En el siguiente script, tuve que dividir el vídeo en tres partes (episodio, ending y avance) y aplicar un método distino a cada una para luego volver a unirlas.</p>
+                <pre><code class="language-py">from fvsfunc import OverlayInter
+from havsfunc import QTGMC
+
+ep = video[0:38975]
+ed = video[38975:41670]
+av = video[41670:43428]
+IVTC_ep = core.tivtc.TFM(ep, mode=6, PP=4, field=1, slow=2, cthresh=8, micmatching=3, clip2=QTGMC(ep, Preset='Very Slow', SourceMatch=2, TFF=True, FPSDivisor=2, Sharpness=0.4, TR2=3))
+IVTC_ep = core.tivtc.TDecimate(IVTC_ep, mode=1)
+IVTC_ed = OverlayInter(ed, pattern=0, tff=True)
+IVTC_av = core.tivtc.TFM(av, mode=6, PP=4, field=1, slow=2, cthresh=8, micmatching=3, clip2=QTGMC(av, Preset='Very Slow', SourceMatch=2, TFF=True, FPSDivisor=2, Sharpness=0.4, TR2=3))
+IVTC_av = core.tivtc.TDecimate(IVTC_av, mode=1)
+IVTC = IVTC_ep + IVTC_ed + IVTC_av</code></pre>
+                <em>Explanación pendiente.</em>
+        </section>
+        <section id="Graining">
+                <h1>Graining</h1>
+                <h3>AddGrain</h3>
+                <pre><code class="language-py">grain = core.grain.Add(video, var=1.0, uvar=0.0, seed=-1, constant=True)</code></pre>
+                <ul>
+                        <li>var: la intensidad para el plano luma.</li>
+                        <li>uvar: la intensidad para la crominancia.</li>
+                        <li>seed: establece una secuencia de grano a repetir.</li>
+                        <li>constant: genera grano estático si está activado, y dinámico si no.</li>
+                </ul>
+                <h3>adaptive_grain</h3>
+                <pre><code class="language-py">from kagefunc import adaptive_grain
+
+grain = adaptive_grain(video, strength=0.25, static=True, luma_scaling=12, show_mask=False)</code></pre>
+                <ul>
+                        <li>strength: igual que “var” en AddGrain.</li>
+                        <li>static: igual que “constant” en AddGrain.</li>
+                        <li>luma_scaling: valores mayores generarán menos grano, especialmente en escenas con mucho brillo.</li>
+                        <li>show_mask: establece si mostrar o no la máscara usada.</li>
+                </ul>
+                <h3>adptvgrnMod</h3>
+                <p>Versión modificada del anterior.</p>
+                <pre><code class="language-py">from adptvgrnMod import *
+
+grain = adptvgrnMod(deband, strength=0.25, luma_scaling=10, size=1.25, sharp=60, seed=69420, show_mask=False)</code></pre>
+                <ul>
+                        <li>strength, luma_scaling y show_mask: igual que en adaptive_grain.</li>
+                        <li>size: el tamaño del grano.</li>
+                        <li>sharp: la nitidez del grano.</li>
+                        <li>seed: igual que en AddGrain.</li>
+                </ul>
+                <h3>Graigasm</h3>
+                <pre><code class="language-py">from vardefunc import noise
+
+#Grain
+grain = noise.Graigasm(
+    thrs=[x << 8 for x in (32, 80, 128, 176)],
+    strengths=[(0.25, 0.0), (0.20, 0.0), (0.15, 0.0), (0.0, 0.0)],
+    sizes=(1.25, 1.20, 1.15, 1),
+    sharps=(80, 70, 60, 50),
+    grainers=[
+        noise.AddGrain(seed=69420, constant=False),
+        noise.AddGrain(seed=69420, constant=False),
+        noise.AddGrain(seed=69420, constant=True)
+	]).graining(detail)
+</code></pre>
+                <ul>
+                        <li>thrs: la secuencia de umbrales que establecen el límite del grano.</li>
+                        <li>strengths: intensidad del grano en los planos luma y crominancia respectivamente.</li>
+                        <li>size y sharp: igual que en adptvgrnMod.</li>
+                        <li>grainers: la función de graining a usar.</li>
+                </ul>
+        </section>
+        <section id="Cargar_script_en_x264">
+                <h1>Cargar script en x264</h1>
+                <h3 id="VSPipe">VSPipe</h3>
+                <p>x264 no puede interpretar directamente los scripts de VapourSynth, así que primero pasan por VSPipe, el cual actúa como intérprete.</p>
+                <pre><code class="language-py">vspipe.exe "%script%" - -c y4m | x264.exe --demuxer y4m  %params% -o "%out%" -</code></pre>
+                <h3><a href="https://github.com/DJATOM/x264-aMod" target="_blank">x264-aMod</a></h3>
+                <p>Con esta versión modificada podemos saltarnos el uso de VSPipe y cargar directamente el script.</p>
+                <pre><code class="language-py">x264.exe %params% -o "%out%" "%script%"</code></pre>
+        </section>
+        <section id="Ejemplos">
+                <h1>Ejemplos</h1>
+                <h3>VapourSynth</h3>
+                <ul>
+                        <li>Romeo x Juliet (Ep. 02): <a href="https://pastebin.com/UqnLRQNR" target="_blank">https://pastebin.com/UqnLRQNR</a></li>
+                        <li>Sword Art Online (Ep. 01): <a href="https://pastebin.com/r1v6Medb" target="_blank">https://pastebin.com/r1v6Medb</a></li>
+                        <li>Repositorios:
+                                <ul>
+                                        <li><a href="https://github.com/LightArrowsEXE/Encoding-Projects" target="_blank">https://github.com/LightArrowsEXE/Encoding-Projects</a></li>
+                                        <li><a href="https://github.com/Ichunjo/encode-scripts" target="_blank">https://github.com/Ichunjo/encode-scripts</a></li>
+                                        <li><a href="https://github.com/Setsugennoao/Encoding-Scripts" target="_blank">https://github.com/Setsugennoao/Encoding-Scripts</a></li>
+                                </ul>
+                        </li>
+                </ul>
+                <h3>.bat</h3>
+                <ul>
+                        <li>Romeo x Juliet (Ep. 01): <a href="https://pastebin.com/hwdGPvsq" target="_blank">https://pastebin.com/hwdGPvsq</a></li>
+                        <li>Angel Beats! (Ep. 01): <a href="https://pastebin.com/Tr6M2zJd" target="_blank">https://pastebin.com/Tr6M2zJd</a></li>
+                </ul>
+        </section>
+</body>
+</html>
