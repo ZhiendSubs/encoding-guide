@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es-es">
+<head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Identificación de artifacts</title>
+        <link rel="stylesheet" href="../../styles/styles.css">
+</head>
+<body>
+        <nav>
+                <a href="../../index.html">Codificación y filtrado de vídeo</a> >
+                <a href="../vapoursynth.html">VapourSynth</a> >
+                <a href="artifacts.html">Identificación de artifacts</a>
+        </nav>
+        <section id="Índice">
+                <h2>Índice</h2>
+                <nav>
+                    <ul>
+                        <li><a href="#Banding">Banding</a></li>
+                        <li><a href="#Blocking">Blocking</a></li>
+                        <li><a href="#Aliasing">Aliasing</a></li>
+                        <li><a href="#Haloing">Haloing</a></li>
+                        <li><a href="#Ringing">Ringing</a></li>
+                        <li><a href="#Noise">Noise</a></li>
+                        <li><a href="#Entrelazado">Entrelazado</a></li>
+                        <li><a href="#Otros">Otros</a></li>
+                    </ul>
+                </nav>
+        </section>
+        <section id="Banding">
+                <h3>Banding</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/banding_src.jpg" alt="Ejemplo de banding"><br>
+                        <a href="https://commons.wikimedia.org/wiki/File:The_Foston_by_pass_on_the_A1_North_-_geograph.org.uk_-_1068397.jpg" target="_blank">Steve  F</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0" target="_blank">CC BY-SA 2.0</a>, via Wikimedia Commons
+                        </div>
+                        <p>El banding es provocado por la falta de colores para la representación de un degradado, algo bastante común en vídeos en 8 bits, haciéndose más obvios los saltos entre tonos. En esta imagen, se puede apreciar en el cielo.</p>
+                </div>
+        </section>
+        <section id="Blocking">
+                <h3>Blocking</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/blocking_src.png" alt="Ejemplo de blocking"><br>
+                        <a href="https://en.wikipedia.org/wiki/File:The_macroblocking_effect_(JPEG).png" target="_blank">XtUProductions</a>, Public Domain, via Wikimedia Commons
+                        </div>
+                        <p>Esto ocurre cuando una imagen compleja recibe una tasa de bits demasiado baja en una retransmisión. Al descomprimirlo, algunos de los bloques decodificados se verán como bloques más grandes.<br>Suele estar presente en vídeos de YouTube.</p>
+                </div>
+        </section>
+        <section id="Aliasing">
+                <h3>Aliasing</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/aliasing.png" alt="Ejemplo de aliasing"><br>
+                        <a href="https://stackoverflow.com/questions/20011515/how-to-remove-anti-aliasing-in-pdf-images" target="_blank">st12</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>, via <a href="https://stackoverflow.com/legal/terms-of-service#licensing" target="_blank">Stack Overflow</a>
+                        </div>
+                        <p>El aliasing son bordes dentados, como se puede ver en la imagen (a la izquierda). Esto se conoce como "staircase effect" ("efecto escalera").<br>Existen otras variantes, como el <a href="https://es.wikipedia.org/wiki/Efecto_estrobosc%C3%B3pico" target="_blank">efecto estroboscópico</a> o el <a href="https://es.wikipedia.org/wiki/Patr%C3%B3n_de_muar%C3%A9" target="_blank">patrón de muaré</a>, siendo esta última y la mostrada en la imagen las que trataremos.</p>
+                </div>
+        </section>
+        <section id="Haloing">
+                <h3>Haloing</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/haloing_src.jpg" alt="Ejemplo de haloing"><br>
+                        <a href="https://commons.wikimedia.org/wiki/File:Elli%C3%B0aey-haloing.jpg" target="_blank">Alchemist-hp</a>, <a href="https://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a>, via Wikimedia Commons
+                        </div>
+                        <p>Se trata de un fino brillo alrededor de líneas.</p>
+                </div>
+        </section>
+        <section id="Ringing">
+                <h3>Ringing</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/ringing_src.jpg" alt="Ejemplo de ringing" style="width: 400px;"><br>
+                        <a href="https://commons.wikimedia.org/wiki/File:Lossy-circle.jpg" target="_blank">Meisam</a>, Public domain, via Wikimedia Commons
+                        </div>
+                        <p>El ringing es la aparición de píxeles parecidos a ruido estático alrededor de un objeto.</p>
+                </div>
+        </section>
+        <section id="Noise">
+                <h3>Noise</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/noise_src.jpg" alt="Ejemplo de noise" style="width: 400px;"><br>
+                        <a href="https://commons.wikimedia.org/wiki/File:Highimgnoise.jpg" target="_blank">Lugiadoom at English Wikipedia</a>, Public domain, via Wikimedia Commons
+                        </div>
+                        <p>El ruido, a diferencia del grano, es una variación aleatoria del brillo o el color causada por el dispositivo de entrada que resulta antiestética. Por otro lado, el grano se usa para disimular otros artifacts y es más agradable a la vista, llegándose a ver como una textura propia de la imagen.</p>
+                </div>
+        </section>
+        <section id="Entrelazado">
+                <h3>Entrelazado</h3>
+                <div>
+                        <div class="center">
+                        <img src="../../img/artifacts/entrelazado_src.jpg" alt="Ejemplo de entrelazado" style="width: 400px;"><br>
+                        <a href="https://commons.wikimedia.org/wiki/File:Interlaced_video_frame_(car_wheel).jpg" target="_blank">Mikus</a>, Public domain, via Wikimedia Commons
+                        </div>
+                        <p>Es un método en el que la imagen se divide en dos campos, alternando líneas pares e impares, causando lo que se ve en la imagen. Es comúnmente utilizado en televisión y DVD.<br>Existe un efecto parecido (que utiliza este método), el telecine, el cual se suele poder distinguir debido a que el vídeo se encuentra a una tasa de frames de 29.97.</p>
+                </div>
+        </section>
+        <section id="Otros">
+                <h3>Otros</h3>
+                <p>Existen más artifacts, pero son menos comunes. Algunas guías que tratan estos artifacts:</p>
+                <ul>
+                        <li><a href="https://www.l33tmeatwad.com/vapoursynth101/using-filters-functions" target="_blank">https://www.l33tmeatwad.com/vapoursynth101/using-filters-functions</a></li>
+                        <li><a href="https://guide.encode.moe/encoding/video-artifacts.html" target="_blank">https://guide.encode.moe/encoding/video-artifacts.html</a></li>
+                </ul>
+        </section>
+</body>
+</html>

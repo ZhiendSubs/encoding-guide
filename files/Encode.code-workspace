@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "G:\\Encode\\.vscode"
+		}
+	],
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "VS Preview Current File",
+				"type": "python",
+				"request": "launch",
+				"console": "integratedTerminal",
+				"module": "vspreview",
+				"args": ["${file}"],
+				"showReturnValue": true,
+				"subProcess": true
+			}
+		]
+	}
+}
